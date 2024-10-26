@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rocket Launch with Matchstick Tilt</title>
+    <!-- Link to Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            background-color: #001f3f;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Rocket Icon */
+        .rocket {
+            font-size: 85px;
+            color: white;
+            position: absolute;
+            animation: shake 0.5s infinite;
+            bottom: 10px;
+            transform: rotate(-45deg);
+            transition: transform 0.5s ease-in;
+            cursor: pointer;
+        }
+
+        /* Matchstick (Torch) Image */
+        .matchstick {
+            width: 55px;
+            height: auto;
+            position: absolute;
+            bottom: 10px;
+            left: 50px;
+            cursor: pointer;
+            z-index: 10;
+            transition: transform 0.2s ease;
+        }
+
+        /* Stars */
+        .star {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 1.5s infinite ease-in-out;
+        }
+
+        /* Rocket Launch Animation */
+        @keyframes launch {
+            0% { transform: translateY(0) rotate(-45deg); }
+            100% { transform: translateY(-100vh) rotate(-45deg); }
+        }
+
+        /* Twinkling Stars */
+        @keyframes twinkle {
+            0%, 100% {
+                opacity: 0.1;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Rocket Icon -->
+    <i class="fas fa-rocket rocket" id="rocket"></i>
+
+    <!-- Matchstick Image (Torch) -->
+    <img src="https://png.pngtree.com/png-vector/20240901/ourmid/pngtree-torch-clipart-flaming-illustration-for-game-png-image_13711946.png" 
+    class="matchstick" id="matchstick" alt="Matchstick">
+
+    <script>
+        const rocket = document.getElementById("rocket");
+        const matchstick = document.getElementById("matchstick");
+
+        let isRocketLaunched = false;
+        let isFollowingCursor = false;
+        let isCursorNearMatchstick = false;
+
+        // Function to apply tilt effect on the matchstick
+        function tiltMatchstick(event) {
+            if (!isCursorNearMatchstick) return; // Only tilt if the cursor is near the matchstick
+
+            const { clientX } = event;
+            const { innerWidth } = window;
+
+            // Calculate tilt angle based on cursor position
+            const tilt = ((clientX / innerWidth) - 0.5) * 80; // Adjust for more/less tilt
+            matchstick.style.transform = `rotate(${tilt}deg)`;
+        }
+
+        // Event listener for mouse movement
+        document.addEventListener('mousemove', (e) => {
+            if (isFollowingCursor) {
+                matchstick.style.left = `${e.clientX - 25}px`; // Center the icon on the cursor
+                matchstick.style.top = `${e.clientY - 25}px`; // Center the icon on the cursor
+            }
+            tiltMatchstick(e); // Call tilt function
+            checkDistance();
+        });
+
+        // Event listeners to make the matchstick stick to the cursor on hover
+        matchstick.addEventListener('mouseenter', () => {
+            isFollowingCursor = true; // Start following the cursor
+            isCursorNearMatchstick = true; // Cursor is near the matchstick
+        });
+
+        matchstick.addEventListener('mouseleave', () => {
+            isFollowingCursor = false; // Stop following the cursor
+            isCursorNearMatchstick = false; // Cursor leaves the matchstick
+            matchstick.style.transform = `rotate(0deg)`; // Reset tilt
+        });
+
+        // Check distance between rocket and matchstick
+        function checkDistance() {
+            const rocketRect = rocket.getBoundingClientRect();
+            const matchstickRect = matchstick.getBoundingClientRect();
+            
+            const distance = Math.hypot(
+                rocketRect.x - matchstickRect.x,
+                rocketRect.y - matchstickRect.y
+            );
+
+            // If the matchstick is close enough to the rocket, launch the rocket
+            if (distance < 80 && !isRocketLaunched) {
+                launchRocket();
+            }
+        }
+
+        // Launch the rocket and hide the matchstick after reaching the top
+        function launchRocket() {
+            isRocketLaunched = true;
+            rocket.style.animation = "launch 2s forwards"; // Launch animation
+            matchstick.style.display = 'none'; // Hide the matchstick when launching
+
+            // Navigate to the next page after 2 seconds (adjust timing to match animation duration)
+            setTimeout(() => {
+                window.location.href = "thankYou.html"; // Replace with the actual page
+            }, 2000);
+        }
+
+        // Twinkling Stars Generator
+        function createStar() {
+            const star = document.createElement("div");
+            star.classList.add("star");
+            const { innerWidth: width, innerHeight: height } = window;
+            const randomX = Math.random() * width;
+            const randomY = Math.random() * height;
+            const randomDuration = Math.random() * 2 + 1; // Random twinkling duration
+            const randomDelay = Math.random() * 2; // Random start delay
+
+            star.style.left = `${randomX}px`;
+            star.style.top = `${randomY}px`;
+            star.style.animationDuration = `${randomDuration}s`;
+            star.style.animationDelay = `${randomDelay}s`;
+
+            document.body.appendChild(star);
+        }
+
+        // Create multiple stars
+        for (let i = 0; i < 100; i++) {
+            createStar();
+        }
+    </script>
+
+</body>
+</html>
